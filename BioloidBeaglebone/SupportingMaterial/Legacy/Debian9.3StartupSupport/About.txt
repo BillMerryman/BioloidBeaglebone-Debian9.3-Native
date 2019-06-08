@@ -1,0 +1,14 @@
+Just run 'LaunchBioloid.sh'. The rest of the following is historical. Especially ignore the note at the bottom, as this is addressed by blacklisting the UIOPRUSS on the commandline.
+
+This file does the following:
+
+overlayPinConfig.sh - this is a script that is run by the user before launching the main program. It does the following: loads the univeral IO and HDMI-disabling device tree overlays (sometimes referred to synonymously with capes); loads the UIO_PRUSS kernel driver and sets aside 2MB of system memory for use by the PRUs; configures all the pins necessary for PRU input, output, and UART; and configures one pin for PWM to drive the camera.
+
+To use this file:
+
+copy overlayPinConfig.sh to whatever directory you will be working from and make executable
+
+Before running the main BioloidBeaglebone program, you must execute the overlayPinConfig.sh (e.g. open a terminal window, switch to the directory where you placed overlayPinConfig.sh, type ./overlayPinConfig.sh, and press enter). This only needs to be done once, and should only be done once, preferrably right after booting has completed. You should also run GRB422-QVGA.sh from the CameraManipulationScripts folder if you are using the GRB422 QVGA version of the camera code, currently the default. This must be run after overlayPinConfig.sh or it will not work.
+
+
+NOTE: CURRENTLY ON 9.3, IF YOU RUN THE TWO STARTUP SCRIPTS (OVERLAYPINCONFIG.SH AND GRB422-QVGA.SH AND THEN RUN BIOLOIDBEAGLEBONE, YOU WILL GET A BLANK BLACK VIDEO FEED. YOU MUST CLOSE THE PROGRAM, RUN RMMOD UIO_PRUSS FROM A COMMAND LINE, THEN RE-RUN THE SCRIPTS. THE PROGRAM SHOULD THEN WORK NORMALLY.

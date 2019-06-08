@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;BioloidBeaglebone/PRU_0/AM3359_PRU.cmd&apos; to &apos;AM335x_PRU.cmd&apos;" description="Rename resource &apos;AM3359_PRU.cmd&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="PRU_0/AM3359_PRU.cmd" name="AM335x_PRU.cmd" stamp="1559864674262" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;BioloidBeaglebone/PRU_1/AM3359_PRU.cmd&apos; to &apos;AM335x_PRU.cmd&apos;" description="Rename resource &apos;AM3359_PRU.cmd&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="PRU_1/AM3359_PRU.cmd" name="AM335x_PRU.cmd" stamp="1559864759440" updateReferences="true"/>
+</session>
