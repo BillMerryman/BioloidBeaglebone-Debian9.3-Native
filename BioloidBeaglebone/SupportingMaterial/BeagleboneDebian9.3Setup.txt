@@ -84,7 +84,7 @@ port=177
 -------------enable root SSH for SFTP
 
 enable root SSH
-etc/ssh/sshd_config
+/etc/ssh/sshd_config
 PermitRootLogin yes
 
 ------------switch from LXQT to LXDE 
@@ -111,28 +111,56 @@ apt-get install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
 apt-get install libgtk2.0-dev
 apt-get install unzip
 
-wget -O opencv-3.4.0.zip https://github.com/Itseez/opencv/archive/3.4.0.zip
-wget -O opencv_contrib-3.4.0.zip https://github.com/Itseez/opencv_contrib/archive/3.4.0.zip
+wget -O opencv-3.4.3.zip https://github.com/Itseez/opencv/archive/3.4.3.zip
+wget -O opencv_contrib-3.4.3.zip https://github.com/Itseez/opencv_contrib/archive/3.4.3.zip
 
-unzip opencv-3.4.0.zip
-unzip opencv_contrib-3.4.0.zip
+unzip opencv-3.4.3.zip
+unzip opencv_contrib-3.4.3.zip
 
-cd opencv-3.4.0
+cd opencv-3.4.3
 mkdir build && cd build
-cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_CUDA=OFF -D WITH_CUFFT=OFF -D WITH_CUBLAS=OFF -D WITH_NVCUVID=OFF -D WITH_OPENCL=OFF -D WITH_OPENCLAMDFFT=OFF -D WITH_OPENCLAMDBLAS=OFF -D BUILD_opencv_apps=OFF -D BUILD_DOCS=OFF -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D ENABLE_NEON=on ..
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+	-D CMAKE_INSTALL_PREFIX=/usr/local \
+	-D OPENCV_EXTRA_MODULES_PATH=/root/Desktop/opencv_contrib-3.4.3/modules \
+	-D INSTALL_PYTHON_EXAMPLES=OFF \
+	-D INSTALL_C_EXAMPLES=OFF \
+	-D BUILD_EXAMPLES=OFF \
+	-D WITH_CUDA=OFF \
+	-D WITH_CUFFT=OFF \
+	-D WITH_CUBLAS=OFF \
+	-D WITH_NVCUVID=OFF \
+	-D WITH_OPENCL=OFF \
+	-D WITH_OPENCLAMDFFT=OFF \
+	-D WITH_OPENCLAMDBLAS=OFF \
+	-D ENABLE_VFPV3=ON \
+	-D ENABLE_NEON=ON \
+	-D BUILD_opencv_apps=OFF \
+	-D BUILD_DOCS=OFF \
+	-D BUILD_PERF_TESTS=OFF \
+	-D BUILD_TESTS=OFF \
+	..
+
+free //check for swap file, if not present do the following:
+dd if=/dev/zero of=/var/swap.img bs=1024k count=1000 //this may take a while to run
+mkswap /var/swap.img
+chmod 600 /var/swap.img
+swapon /var/swap.img
+
 make
 make install
 ldconfig
 
-------------PRU Compilation Support
+swapoff /var/swap.img //if you turned on the swap file previously
+rm /var/swap.img //to recover the 1GB of space
 
-if it isn't already installed, install the Pru Software Support Package. (I installed to /usr/lib/ti/pru-software-support-package and put a symlink on the desktop.)
+------------PRU Compilation Support
 
 In /etc/environment, add:
 export PRU_CGT=/usr/share/ti/cgt-pru
 export PRU_SUPPORT=/usr/lib/ti/pru-software-support-package
 
-If it is already installed, make sure to create a 'bin' folder in /usr/share/ti/cgt-pru, and in this folder create symlinks clpru, lnkpru, and hexpru that point to the respective executables in /usr/bin
+create a symlink named 'bin' in /usr/share/ti/cgt-pru to point to /usr/bin:
+ln -s /usr/bin /usr/share/ti/cgt-pru/bin
 
 ------------to fix bad DOS line returns in scripts
 

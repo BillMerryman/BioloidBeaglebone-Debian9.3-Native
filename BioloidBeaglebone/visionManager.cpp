@@ -38,10 +38,10 @@ using namespace cv;
 using namespace cv::dnn;
 
 volatile int *imageReadyFlag;
-cv::Mat sourceImage;
-cv::Mat maskImage;
+cv::Mat displayImage;
+cv::Mat processingImage;
 Net net;
-Size resized(320, 240);
+int imageProcessingType = 2;
 
 const String CLASSES[] = {"background",
 							"aeroplane",
@@ -73,24 +73,34 @@ void visionManagerInitialize(const char *protoFile, const char *caffeFile)
 
 	PRU_INTEROP_1_DATA* PRUInterop1Data = &(getPRUInteropData()->PRUInterop1Data);
 
-	sourceImage = cv::Mat(inputSize, CV_8UC3, (void*)(PRUInterop1Data->imageData));
-	maskImage = cv::Mat(inputSize, CV_8UC3);
+	displayImage = cv::Mat(inputSize, CV_8UC3, (void*)(PRUInterop1Data->imageData));
+	processingImage = cv::Mat(inputSize, CV_8UC3);
 	imageReadyFlag = ((int *)(&(PRUInterop1Data->imageReadyFlag)));
 	net = cv::dnn::readNetFromCaffe(protoFile, caffeFile);
-	cvNamedWindow("main", CV_WINDOW_AUTOSIZE);
-	cvNamedWindow("mask", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("Display_Image", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("Processing_Image", CV_WINDOW_AUTOSIZE);
 }
 
 void visionManagerUninitialize()
 {
-	cvDestroyWindow("main");
-	cvDestroyWindow("mask");
+	cvDestroyWindow("Display_Image");
+	cvDestroyWindow("Processing_Image");
 }
 
-void visionManagerProcess()
+void visionManagerProcess(char key)
 {
+	if(key=='t') imageProcessingType=1;
+	if(key=='d') imageProcessingType=2;
 	if(*imageReadyFlag == IMAGE_NOT_READY) return;
-	visionManagerProcessDNN();
+	switch(imageProcessingType)
+	{
+		case 1:
+			visionManagerProcessThreshold();
+			break;
+		case 2:
+			visionManagerProcessDNN();
+			break;
+	}
 	*imageReadyFlag = IMAGE_NOT_READY;
 }
 
@@ -100,38 +110,36 @@ void visionManagerProcessThreshold()
 	CvPoint position;
 	char outputMessage[50];
 
-	inRange(sourceImage, Scalar(60, 0, 100, 0), Scalar(200, 80, 255, 0), maskImage);
-	cv::Moments moments = cv::moments(maskImage, false);
+	inRange(displayImage, Scalar(60, 0, 100, 0), Scalar(200, 80, 255, 0), processingImage);
+	cv::Moments moments = cv::moments(processingImage, false);
 	area = moments.m00;
 	if (area > 1000000)
 	{
 		position.x = moments.m10 / area;
 		position.y = moments.m01 / area;
 		sprintf(outputMessage, "pos: %d, %d", position.x, position.y);
-		rectangle(sourceImage, cvPoint(position.x - 5, position.y - 5), cvPoint(position.x + 5, position.y + 5), cvScalar(0, 255, 0, 0), 1, 8, 0);
-		putText(sourceImage, outputMessage, Point(position.x + 10, position.y + 5), CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0), 2, 8, false);
+		rectangle(displayImage, cvPoint(position.x - 5, position.y - 5), cvPoint(position.x + 5, position.y + 5), cvScalar(0, 255, 0, 0), 1, 8, 0);
+		putText(displayImage, outputMessage, Point(position.x + 10, position.y + 5), CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 0, 0), 2, 8, false);
 	}
-	imshow("main", sourceImage);
-	imshow("mask", maskImage);
+	setWindowTitle("Display_Image", "Process Image By Threshold");
+	setWindowTitle("Processing_Image", "Image Moments");
+	imshow("Display_Image", displayImage);
+	imshow("Processing_Image", processingImage);
 }
 
 void visionManagerProcessDNN()
 {
-	Mat resizedImage;
+	const Size resized(320, 240);
 	Point position;
-	static double outputColor = 0;
 
 	char outputMessage[64];
 
 	if(*imageReadyFlag == IMAGE_NOT_READY) return;
 
-	(outputColor == 0) ? outputColor = 255 : outputColor = 0;
-
-	resize(sourceImage, resizedImage, resized, 0, 0, CV_INTER_LINEAR);
-	Mat blob = cv::dnn::blobFromImage(resizedImage,
-						0.007843f,
-						resized,
-						Scalar(127.5));
+	Mat blob = cv::dnn::blobFromImage(displayImage,
+										0.007843f,
+										resized,
+										Scalar(127.5));
 	net.setInput(blob);
 	Mat detections = net.forward();
 	for(int i = 0; i < detections.size[2]; i++)
@@ -155,9 +163,12 @@ void visionManagerProcessDNN()
 			int height = (detections.at<float>(heightPercent) * resized.height) - position.y;
 
 			Rect detection(position.x, position.y, width, height);
-			rectangle(resizedImage, detection, Scalar(0, outputColor, outputColor), 1, 8, 0);
-			putText(resizedImage, CLASSES[cls], Point(position.x, position.y + 10), CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, outputColor, outputColor), 2, 8, false);
+			rectangle(displayImage, detection, Scalar(0, 255, 0), 1, 8, 0);
+			putText(displayImage, CLASSES[cls], Point(position.x, position.y + 10), CV_FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0), 2, 8, false);
 		}
 	}
-	imshow("main", resizedImage);
+	setWindowTitle("Display_Image", "Process Image By DNN");
+	setWindowTitle("Processing_Image", "Not Used.");
+	imshow("Display_Image", displayImage);
+	imshow("Processing_Image", processingImage);
 }
