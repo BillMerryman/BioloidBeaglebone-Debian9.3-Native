@@ -36,12 +36,21 @@ extern "C" {
  * 	image processed by cvMoments. It also creates two windows, one for each of the images.
  * 	Also sets up the font to write text to the image windows.
  *
- *	@param	protoFile the proto file
- *	@param	caffeFile the caffe file
+ *	@param	namesFile the file with the list of class names
+ *	@param	modelFile the file that defines the DNN network
+ *	@param	weightsFile the file containing the weights for the network
  * 	@return void.
  *
  */
-void visionManagerInitialize(const char *protoFile, const char *caffeFile);
+void visionManagerInitialize(const char *caffeNamesFile,
+								const char *prototxtFile,
+								const char *caffemodelFile,
+								float caffeConf,
+								const char *darknetNamesFile,
+								const char *cfgFile,
+								const char *weightsFile,
+								float darknetConf,
+								float darknetNMSThreshold);
 
 /** @brief Uninitializes the image/vision subsystem
  *
@@ -69,14 +78,26 @@ void visionManagerUninitialize();
  */
 void visionManagerProcess(char key);
 
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef __cplusplus
+
+void visionManagerInitializeCaffe();
+
+void visionManagerInitializeDarknet();
+
+void visionManagerProcessNone();
 
 void visionManagerProcessThreshold();
 
+void visionManagerCaptureThreshold();
 
-void visionManagerProcessDNN();
+void visionManagerProcessCaffe();
 
-#ifdef __cplusplus
-}
+void visionManagerProcessDarknet();
+
 #endif
 
 

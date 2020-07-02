@@ -76,9 +76,6 @@ MSG_SUCCESS = ---SUCCESS---
 # Our favourite
 all: pru_bin $(PROJECT)
 
-#$(PROJECT):
-#	$(CP) $(CFLAGS) -o main main.c image.c  pru.c prussdrv.c
-
 # Linker call
 $(PROJECT): $(COBJ) $(CPPOBJ)
 	@echo $(MSG_EMPTYLINE)
